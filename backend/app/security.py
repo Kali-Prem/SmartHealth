@@ -35,6 +35,8 @@ class RoleEnum(str, Enum):
 
     DISTRICT_ADMIN = "district_admin"
     CENTRE_STAFF = "centre_staff"
+    HEALTH_WORKER = "health_worker"
+    STATE_VIEWER = "state_viewer"
 
 
 # Known prompt injection signatures to neutralize
@@ -188,14 +190,78 @@ def require_role(allowed_roles: list[RoleEnum]) -> Callable[..., Any]:
         current_user: dict[str, Any] = Depends(get_current_user),
     ) -> dict[str, Any]:
         user_role = current_user.get("role")
-        if user_role not in [role.value for role in allowed_roles]:
+        allowed_values = [role.value for role in allowed_roles]
+        if (
+            RoleEnum.CENTRE_STAFF.value in allowed_values
+            and RoleEnum.HEALTH_WORKER.value not in allowed_values
+        ):
+            allowed_values.append(RoleEnum.HEALTH_WORKER.value)
+        if (
+            RoleEnum.HEALTH_WORKER.value in allowed_values
+            and RoleEnum.CENTRE_STAFF.value not in allowed_values
+        ):
+            allowed_values.append(RoleEnum.CENTRE_STAFF.value)
+
+        if user_role not in allowed_values:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail=f"Access denied. Requires one of roles: {[r.value for r in allowed_roles]}",
+                detail=f"Access denied. Role '{user_role}' is not authorized. Required: {allowed_values}",
             )
         return current_user
 
     return role_checker
+
+
+async def get_optional_current_user(
+    auth: HTTPAuthorizationCredentials | None = Depends(security_bearer),
+) -> dict[str, Any] | None:
+    """Extract authenticated user if bearer token is present; returns None if not provided."""
+    if not auth or not auth.credentials:
+        return None
+    try:
+        payload = decode_access_token(auth.credentials)
+        username: str | None = payload.get("sub")
+        role: str | None = payload.get("role")
+        if not username or not role:
+            return None
+        return {
+            "username": username,
+            "role": role,
+            "centre_id": payload.get("centre_id"),
+            "name": payload.get("name", username),
+            "district": payload.get("district", "Pune"),
+        }
+    except Exception:
+        return None
+
+
+async def require_write_permission(
+    current_user: dict[str, Any] | None = Depends(get_optional_current_user),
+) -> None:
+    """Enforce that read-only roles (State Viewer) cannot execute data modifications."""
+    if current_user and current_user.get("role") == RoleEnum.STATE_VIEWER.value:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access denied: State Viewer role is strictly Read-Only and cannot modify operational data.",
+        )
+
+
+async def require_admin_execution(
+    current_user: dict[str, Any] | None = Depends(get_optional_current_user),
+) -> None:
+    """Enforce that Health Workers and State Viewers cannot execute administrative operations."""
+    if not current_user:
+        return
+    user_role = current_user.get("role")
+    if user_role in [
+        RoleEnum.HEALTH_WORKER.value,
+        RoleEnum.CENTRE_STAFF.value,
+        RoleEnum.STATE_VIEWER.value,
+    ]:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"Access denied: Role '{user_role}' cannot execute administrative interventions.",
+        )
 
 
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):

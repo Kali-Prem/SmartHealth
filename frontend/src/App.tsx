@@ -14,6 +14,9 @@ import { LateralRebalanceModal } from './components/LateralRebalanceModal';
 import { DemandForecastView } from './components/DemandForecastView';
 import { DoctorDeputationModal } from './components/DoctorDeputationModal';
 import { InteractiveDemoModal } from './components/InteractiveDemoModal';
+import { LoginPage } from './components/LoginPage';
+import { AccessDeniedView } from './components/AccessDeniedView';
+import { useTranslation } from './i18n/translations';
 import {
   Language,
   Centre,
@@ -22,12 +25,59 @@ import {
   DoctorAttendance,
   LabTestAudit,
   OperationsSummary,
+  AuthUser,
 } from './types';
 
 import { INITIAL_CENTRES, INITIAL_MEDICINES } from './data/initialData';
 
+const DEFAULT_DEMO_USER: AuthUser = {
+  username: 'admin@smarthealth.demo',
+  role: 'district_admin',
+  name: 'Dr. Rajesh Sharma, DHO',
+  facility_name: 'Pune District Command Center',
+  district: 'Pune',
+  token: 'demo-admin-token',
+};
+
 export const App: React.FC = () => {
   const [language, setLanguage] = useState<Language>('en');
+  const t = useTranslation(language);
+
+  // Authentication & Demo Persona State
+  const [currentUser, setCurrentUser] = useState<AuthUser | null>(() => {
+    try {
+      if (typeof window !== 'undefined') {
+        const saved = localStorage.getItem('smarthealth-auth-user');
+        if (saved) return JSON.parse(saved);
+      }
+    } catch {
+      // fallback
+    }
+    return DEFAULT_DEMO_USER;
+  });
+
+  const [isLoginViewOpen, setIsLoginViewOpen] = useState(false);
+
+  const handleLoginSuccess = (user: AuthUser, targetDashboard: 'operations' | 'dashboard') => {
+    setCurrentUser(user);
+    setIsLoginViewOpen(false);
+    setActiveTab(targetDashboard);
+  };
+
+  const handleSwitchRole = () => {
+    setIsLoginViewOpen(true);
+  };
+
+  const handleLogout = () => {
+    try {
+      localStorage.removeItem('smarthealth-auth-user');
+      localStorage.removeItem('smarthealth-auth-token');
+    } catch {
+      // ignore
+    }
+    setCurrentUser(null);
+    setIsLoginViewOpen(true);
+  };
 
   // Theme state: 'light' (default), 'dark', or 'high-contrast'
   const [theme, setTheme] = useState<AppTheme>(() => {
@@ -272,6 +322,9 @@ export const App: React.FC = () => {
           onToggleContrast={toggleContrast}
           onOpenCopilot={() => setIsCopilotOpen(true)}
           onLaunchDemo={() => setIsDemoOpen(true)}
+          currentUser={currentUser}
+          onSwitchRole={handleSwitchRole}
+          onLogout={handleLogout}
         />
 
         <div className="app-shell">
@@ -291,134 +344,180 @@ export const App: React.FC = () => {
           />
 
           <main className="main-content" id="main-content">
-            {/* Dashboard View */}
-            {activeTab === 'dashboard' && (
+            {isLoginViewOpen ? (
+              <LoginPage
+                language={language}
+                onLoginSuccess={handleLoginSuccess}
+                onClose={currentUser ? () => setIsLoginViewOpen(false) : undefined}
+              />
+            ) : (
               <>
-                {/* Compact Top Priorities Today Panel */}
-                <TopPrioritiesPanel
-                  language={language}
-                  onOpenInventory={() => setActiveTab('inventory')}
-                  onOpenDeputation={(cId) => {
-                    const found = centres.find((c) => c.id === cId);
-                    setDeputationModal({
-                      isOpen: true,
-                      centreId: cId,
-                      centreName: found
-                        ? language === 'hi'
-                          ? found.name_hi || found.name
-                          : found.name
-                        : undefined,
-                    });
-                  }}
-                  onSelectCentre={(_id) => setActiveTab('facilities')}
-                />
+                {/* Persistent State Viewer Read-Only Notice */}
+                {currentUser?.role === 'state_viewer' && (
+                  <div
+                    className="state-readonly-banner"
+                    role="status"
+                    style={{ marginBottom: '16px' }}
+                  >
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span className="readonly-pill-tag">{t.readOnlyBadge}</span>
+                      <span>{t.stateReadOnlyNotice}</span>
+                    </span>
+                    <button
+                      type="button"
+                      className="btn"
+                      onClick={handleSwitchRole}
+                      style={{ padding: '3px 8px', fontSize: '0.75rem', fontWeight: 700 }}
+                      aria-label={t.switchRole}
+                    >
+                      {t.switchRole}
+                    </button>
+                  </div>
+                )}
 
-                <KpiScorecard
-                  summary={summary}
-                  language={language}
-                  onSelectAlertTab={() => setActiveTab('facilities')}
-                />
+                {/* Role-Based Access Restriction: Health Worker restricted from Forecasting */}
+                {currentUser?.role === 'health_worker' && activeTab === 'forecasting' ? (
+                  <AccessDeniedView
+                    language={language}
+                    currentUser={currentUser}
+                    attemptedSection={t.demandForecast}
+                    onNavigateAllowed={() => setActiveTab('operations')}
+                    onSwitchRole={handleSwitchRole}
+                  />
+                ) : (
+                  <>
+                    {/* Dashboard View */}
+                    {activeTab === 'dashboard' && (
+                      <>
+                        {/* Compact Top Priorities Today Panel */}
+                        <TopPrioritiesPanel
+                          language={language}
+                          onOpenInventory={() => setActiveTab('inventory')}
+                          onOpenDeputation={(cId) => {
+                            const found = centres.find((c) => c.id === cId);
+                            setDeputationModal({
+                              isOpen: true,
+                              centreId: cId,
+                              centreName: found
+                                ? language === 'hi'
+                                  ? found.name_hi || found.name
+                                  : found.name
+                                : undefined,
+                            });
+                          }}
+                          onSelectCentre={(_id) => setActiveTab('facilities')}
+                        />
 
-                <UnderperformingAlertBanner
-                  vulnerableCentres={summary?.top_vulnerable_centres || []}
-                  language={language}
-                  onSelectCentre={(_id) => setActiveTab('facilities')}
-                  onOpenInventory={() => setActiveTab('inventory')}
-                  onOpenDeputation={(cId) => {
-                    const found = centres.find((c) => c.id === cId);
-                    setDeputationModal({
-                      isOpen: true,
-                      centreId: cId,
-                      centreName: found
-                        ? language === 'hi'
-                          ? found.name_hi || found.name
-                          : found.name
-                        : undefined,
-                    });
-                  }}
-                  onOpenForecast={() => setActiveTab('forecasting')}
-                />
+                        <KpiScorecard
+                          summary={summary}
+                          language={language}
+                          onSelectAlertTab={() => setActiveTab('facilities')}
+                        />
 
-                <FacilitiesView
-                  centres={centres}
-                  language={language}
-                  onSelectCentre={(_id) => setActiveTab('operations')}
-                  onViewOnMap={(_id) => setActiveTab('map')}
-                />
+                        <UnderperformingAlertBanner
+                          vulnerableCentres={summary?.top_vulnerable_centres || []}
+                          language={language}
+                          onSelectCentre={(_id) => setActiveTab('facilities')}
+                          onOpenInventory={() => setActiveTab('inventory')}
+                          onOpenDeputation={(cId) => {
+                            const found = centres.find((c) => c.id === cId);
+                            setDeputationModal({
+                              isOpen: true,
+                              centreId: cId,
+                              centreName: found
+                                ? language === 'hi'
+                                  ? found.name_hi || found.name
+                                  : found.name
+                                : undefined,
+                            });
+                          }}
+                          onOpenForecast={() => setActiveTab('forecasting')}
+                        />
+
+                        <FacilitiesView
+                          centres={centres}
+                          language={language}
+                          onSelectCentre={(_id) => setActiveTab('operations')}
+                          onViewOnMap={(_id) => setActiveTab('map')}
+                        />
+                      </>
+                    )}
+
+                    {/* District Map (Google Maps) */}
+                    {activeTab === 'map' && (
+                      <DistrictMapView
+                        centres={centres}
+                        language={language}
+                        onOpenRebalanceModal={(cId, cName, drug) => {
+                          setRebalanceModal({
+                            isOpen: true,
+                            centreId: cId,
+                            centreName: cName,
+                            drugName: drug,
+                          });
+                        }}
+                        onSelectCentre={(_id) => setActiveTab('operations')}
+                      />
+                    )}
+
+                    {/* Facilities View */}
+                    {activeTab === 'facilities' && (
+                      <FacilitiesView
+                        centres={centres}
+                        language={language}
+                        onSelectCentre={(_id) => setActiveTab('operations')}
+                        onViewOnMap={(_id) => setActiveTab('map')}
+                      />
+                    )}
+
+                    {/* Inventory View */}
+                    {activeTab === 'inventory' && (
+                      <InventoryView
+                        stockItems={stockItems}
+                        language={language}
+                        onRefreshStock={refreshInventory}
+                        isLoading={loadingInventory}
+                        error={inventoryError}
+                      />
+                    )}
+
+                    {/* AI Demand Forecasting & Early Stockout Warnings View */}
+                    {activeTab === 'forecasting' && (
+                      <DemandForecastView
+                        language={language}
+                        onOpenRebalanceModal={(cId, cName, drug) => {
+                          setRebalanceModal({
+                            isOpen: true,
+                            centreId: cId,
+                            centreName: cName,
+                            drugName: drug,
+                          });
+                        }}
+                      />
+                    )}
+
+                    {/* Operations View */}
+                    {activeTab === 'operations' && (
+                      <OperationsView
+                        footfallLogs={footfallLogs}
+                        attendanceLogs={attendanceLogs}
+                        testAudits={testAudits}
+                        language={language}
+                        onOpenDeputationModal={(cId, cName) => {
+                          setDeputationModal({
+                            isOpen: true,
+                            centreId: cId,
+                            centreName: cName,
+                          });
+                        }}
+                      />
+                    )}
+                  </>
+                )}
               </>
             )}
-
-        {/* District Map (Google Maps) */}
-        {activeTab === 'map' && (
-          <DistrictMapView
-            centres={centres}
-            language={language}
-            onOpenRebalanceModal={(cId, cName, drug) => {
-              setRebalanceModal({
-                isOpen: true,
-                centreId: cId,
-                centreName: cName,
-                drugName: drug,
-              });
-            }}
-            onSelectCentre={(_id) => setActiveTab('operations')}
-          />
-        )}
-
-        {/* Facilities View */}
-        {activeTab === 'facilities' && (
-          <FacilitiesView
-            centres={centres}
-            language={language}
-            onSelectCentre={(_id) => setActiveTab('operations')}
-            onViewOnMap={(_id) => setActiveTab('map')}
-          />
-        )}
-
-        {/* Inventory View */}
-        {activeTab === 'inventory' && (
-          <InventoryView
-            stockItems={stockItems}
-            language={language}
-            onRefreshStock={refreshInventory}
-            isLoading={loadingInventory}
-            error={inventoryError}
-          />
-        )}
-
-        {/* AI Demand Forecasting & Early Stockout Warnings View */}
-        {activeTab === 'forecasting' && (
-          <DemandForecastView
-            language={language}
-            onOpenRebalanceModal={(cId, cName, drug) => {
-              setRebalanceModal({
-                isOpen: true,
-                centreId: cId,
-                centreName: cName,
-                drugName: drug,
-              });
-            }}
-          />
-        )}
-
-        {/* Operations View */}
-        {activeTab === 'operations' && (
-          <OperationsView
-            footfallLogs={footfallLogs}
-            attendanceLogs={attendanceLogs}
-            testAudits={testAudits}
-            language={language}
-            onOpenDeputationModal={(cId, cName) => {
-              setDeputationModal({
-                isOpen: true,
-                centreId: cId,
-                centreName: cName,
-              });
-            }}
-          />
-        )}
-      </main>
-    </div>
+          </main>
+        </div>
 
       {/* Gemini AI Copilot Modal */}
       <AiCopilotModal

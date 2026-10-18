@@ -307,3 +307,31 @@ export interface ExecuteDeputationResponse {
   message: string;
 }
 
+export type UserRole = 'health_worker' | 'district_admin' | 'state_viewer';
+
+export interface AuthUser {
+  username: string;
+  role: UserRole;
+  centre_id?: string | null;
+  name: string;
+  district?: string;
+  facility_name?: string;
+  token?: string;
+}
+
+export interface DemoRoleConfig {
+  role: UserRole;
+  label: string;
+  email: string;
+  password: string;
+  facility: string;
+  facility_id?: string | null;
+  scope: string;
+  target_dashboard: 'operations' | 'dashboard';
+}
+
+export interface DemoStatusResponse {
+  enable_demo_login: boolean;
+  roles: DemoRoleConfig[];
+}
+

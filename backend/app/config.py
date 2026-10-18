@@ -38,6 +38,37 @@ class Settings(BaseSettings):
     access_token_expire_minutes: int = 1440  # 24 hours
     rate_limit_per_minute: int = 120
 
+    # Demo Mode Configuration
+    enable_demo_login: bool = Field(
+        default=True, description="Enable demo quick-login credentials for evaluators"
+    )
+    demo_worker_email: str = Field(
+        default="worker@smarthealth.demo", description="Demo Health Worker email"
+    )
+    demo_worker_password: str = Field(
+        default="Demo@1234", description="Demo Health Worker password"
+    )
+    demo_worker_facility_id: str = Field(
+        default="phc_003", description="Demo Health Worker facility (Ghogargaon PHC)"
+    )
+
+    demo_admin_email: str = Field(
+        default="admin@smarthealth.demo", description="Demo District Admin email"
+    )
+    demo_admin_password: str = Field(
+        default="Demo@1234", description="Demo District Admin password"
+    )
+    demo_admin_district: str = Field(
+        default="Pune", description="Demo District Admin jurisdiction"
+    )
+
+    demo_state_email: str = Field(
+        default="state@smarthealth.demo", description="Demo State Viewer email"
+    )
+    demo_state_password: str = Field(
+        default="Demo@1234", description="Demo State Viewer password"
+    )
+
     # Google Cloud & Services
     gcp_project_id: str = Field(default="smarthealth-india", description="Google Cloud Project ID")
     google_application_credentials: str | None = None

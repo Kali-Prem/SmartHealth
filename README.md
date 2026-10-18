@@ -201,6 +201,59 @@ Open `http://localhost:3000` in your browser.
 
 ---
 
+## 🔐 Demo Credentials & Multi-Role Access Control
+
+SmartHealth features an integrated **Demo Persona Quick-Login** system specifically designed for hackathon judges and evaluators. The system provides 1-click instant login into 3 distinct healthcare roles without typing, while strictly preserving authentication integrity, password bcrypt hashing, and rate limiting.
+
+### 📋 Demo Accounts Reference Table
+
+| Role | Email / Username | Password | Assigned Scope & Facility | Landing Dashboard | Authorized Capabilities |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Health Worker** | `worker@smarthealth.demo` | `Demo@1234` | **Ghogargaon PHC** (`phc_003`, Tribal Block) | **Daily Operations** (`operations`) | Daily patient OPD census, doctor attendance check-in, lab diagnostic kit audits. Admin pages are blocked with friendly HTTP 403 Access Denied views. |
+| **District Admin** | `admin@smarthealth.demo` | `Demo@1234` | **Pune District Command Center** (District-wide) | **District Dashboard** (`dashboard`) | Full administrative command: execute lateral medicine rebalancing, trigger smart doctor deputations, register facilities & staff, view AI forecasts. |
+| **State Viewer** | `state@smarthealth.demo` | `Demo@1234` | **All 12 Facilities** (Maharashtra Directorate) | **Statewide Overview** (`dashboard`) | **Strictly Read-Only**. Full visibility across all district metrics and telemetry with a persistent top indicator. Mutation actions, medicine transfers, and data submissions are disabled. |
+
+---
+
+### 🧪 Step-by-Step Testing Guide for Evaluators
+
+#### 1. Testing Health Worker Persona
+1. Open the application. In the top navbar, click **"Switch Role"** to open the Demo Login screen.
+2. Under the **"Try Demo"** section, click **"Login as Health Worker"** (or use credentials `worker@smarthealth.demo` / `Demo@1234`).
+3. Notice instant redirect to the **Daily Operations & Attendance** tab.
+4. The navbar badge displays the green **"Health Worker"** pill.
+5. In the navigation sidebar, try clicking **"AI Demand Forecasting & Warnings"**: notice the friendly **Access Denied (HTTP 403)** screen explaining that forecasting is restricted to district administrators, with a direct button to return to your authorized dashboard.
+
+#### 2. Testing District Admin Persona
+1. Click **"Switch Role"** in the navbar.
+2. Click **"Login as District Admin"** (or use `admin@smarthealth.demo` / `Demo@1234`).
+3. Notice instant redirect to the **District Command Dashboard**.
+4. The navbar displays the blue **"District Admin"** badge.
+5. You have full access to execute lateral medicine rebalancing, smart doctor deputations, view telemetry across all 12 facilities, and consult the Gemini AI Copilot.
+
+#### 3. Testing State Viewer Persona (Read-Only Safety)
+1. Click **"Switch Role"** in the navbar.
+2. Click **"Login as State Viewer"** (or use `state@smarthealth.demo` / `Demo@1234`).
+3. Notice redirect to the Dashboard with a prominent purple **"State Viewer Mode (Read-Only)"** banner at the top of the interface.
+4. Navigate across all tabs (Facilities, District Map, Inventory, Operations, Forecasting) to inspect state health data.
+5. Any write or mutation operations via the API (submitting syndromic reports, executing stock transfers) return **HTTP 403 Forbidden** with the message: *"Access denied: State Viewer role is strictly Read-Only"*.
+
+---
+
+### 🛡️ Demo Mode Safety & Production Hardening
+
+- **`ENABLE_DEMO_LOGIN` Flag**:
+  Set `ENABLE_DEMO_LOGIN=false` in `.env` or container environment variables.
+  - When set to `false`, demo quick-login buttons, persona cards, and the credentials table are completely hidden from the login interface.
+  - The endpoint `GET /api/v1/auth/demo-status` immediately returns `{"enable_demo_login": false, "roles": []}`.
+  - **Production Recommendation**: Always ensure `ENABLE_DEMO_LOGIN=false` in production deployments to prevent unauthorized evaluator access.
+- **Brute-Force Rate Limiting**:
+  The `/api/v1/auth/login` endpoint enforces per-IP sliding-window rate limiting. Excessive rapid failed attempts trigger HTTP **429 Too Many Requests** with `Retry-After: 60` headers.
+- **Bcrypt Password Hashing**:
+  All demo credentials and staff passwords are encrypted using industry-standard `bcrypt` hashing with salt rounds. No plaintext credentials exist in route handlers.
+
+---
+
 ## ☁️ Google Cloud Deployment (Cloud Run)
 
 The repository includes a ready-to-use [`cloudbuild.yaml`](cloudbuild.yaml) for automated container compilation and deployment to Google Cloud Run:
@@ -241,6 +294,7 @@ SmartHealth directly addresses every requirement of the District Public Health O
 | **5** | **Underperforming & Deficit Centre Hotspot Surveillance** | [`UnderperformingAlertBanner.tsx`](frontend/src/components/UnderperformingAlertBanner.tsx), [`TopPrioritiesPanel.tsx`](frontend/src/components/TopPrioritiesPanel.tsx) | [`operations.py`](backend/app/routers/operations.py), [`surveillance.py`](backend/app/routers/surveillance.py) | [`operations_service.py`](backend/app/services/operations_service.py), [`cvi_scorer.py`](backend/app/services/cvi_scorer.py) | [`test_operations.py`](tests/test_operations.py), [`test_surveillance.py`](tests/test_surveillance.py) |
 | **6** | **Trilingual Administrative Accessibility (EN / HI / MR)** | [`Header.tsx`](frontend/src/components/Header.tsx), [`translations.ts`](frontend/src/i18n/translations.ts) | N/A (Client-side i18n + WCAG 2.1 AA token system) | [`translations.ts`](frontend/src/i18n/translations.ts) | [`Accessibility.test.tsx`](frontend/src/test/Accessibility.test.tsx), [`App.test.tsx`](frontend/src/test/App.test.tsx) |
 | **7** | **Interactive 4-Step Evaluator Demo Walkthrough** | [`InteractiveDemoModal.tsx`](frontend/src/components/InteractiveDemoModal.tsx) | [`inventory.py`](backend/app/routers/inventory.py) | [`inventory_service.py`](backend/app/services/inventory_service.py) | [`App.test.tsx`](frontend/src/test/App.test.tsx) (interactive step-through test) |
+| **8** | **Multi-Role Demo Login & RBAC Safety (Worker, Admin, State)** | [`LoginPage.tsx`](frontend/src/components/LoginPage.tsx), [`AccessDeniedView.tsx`](frontend/src/components/AccessDeniedView.tsx) | [`auth.py`](backend/app/routers/auth.py) | [`security.py`](backend/app/security.py) | [`test_demo_auth.py`](tests/test_demo_auth.py), [`DemoLogin.test.tsx`](frontend/src/test/DemoLogin.test.tsx) |
 
 ---
 

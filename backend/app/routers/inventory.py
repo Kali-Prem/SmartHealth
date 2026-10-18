@@ -18,6 +18,7 @@ from backend.app.models.inventory import (
     StockTransferResponse,
     TransferStatus,
 )
+from backend.app.security import require_admin_execution, require_write_permission
 from backend.app.services.inventory_service import InventoryService, get_inventory_service
 
 router = APIRouter(prefix="/inventory", tags=["Inventory & Supply Chain"])
@@ -45,7 +46,11 @@ async def list_stock_items(
     )
 
 
-@router.post("/items", response_model=StockItemResponse)
+@router.post(
+    "/items",
+    response_model=StockItemResponse,
+    dependencies=[Depends(require_write_permission)],
+)
 async def save_stock_item(
     payload: StockItemCreate,
     service: InventoryService = Depends(get_inventory_service),
@@ -80,7 +85,11 @@ async def optimize_lateral_rebalance(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e)) from e
 
 
-@router.post("/rebalance/execute", response_model=ExecuteRebalanceResponse)
+@router.post(
+    "/rebalance/execute",
+    response_model=ExecuteRebalanceResponse,
+    dependencies=[Depends(require_admin_execution)],
+)
 async def execute_lateral_rebalance(
     payload: ExecuteRebalanceRequest,
     service: InventoryService = Depends(get_inventory_service),
@@ -92,7 +101,11 @@ async def execute_lateral_rebalance(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)) from e
 
 
-@router.post("/transfer", response_model=StockTransferResponse)
+@router.post(
+    "/transfer",
+    response_model=StockTransferResponse,
+    dependencies=[Depends(require_write_permission)],
+)
 async def create_stock_transfer(
     payload: StockTransferCreate,
     service: InventoryService = Depends(get_inventory_service),
@@ -101,7 +114,11 @@ async def create_stock_transfer(
     return await service.create_stock_transfer(payload)
 
 
-@router.patch("/transfer/{transfer_id}", response_model=StockTransferResponse)
+@router.patch(
+    "/transfer/{transfer_id}",
+    response_model=StockTransferResponse,
+    dependencies=[Depends(require_write_permission)],
+)
 async def update_transfer_status(
     transfer_id: str,
     new_status: TransferStatus = Query(..., description="New lifecycle state"),

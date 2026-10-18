@@ -1,5 +1,6 @@
 from typing import Any
 
+from backend.app.config import get_settings
 from backend.app.data.sample_data import (
     INITIAL_MATERNAL_COHORTS,
     INITIAL_SYNDROMIC_REPORTS,
@@ -13,6 +14,8 @@ from backend.app.services.surveillance_service import SurveillanceService
 async def seed_database(db: DatabaseClient | None = None) -> None:
     """Populate default users, 12 centres, 40 medicines, and 90-day historical time-series."""
     database = db or get_db()
+
+    settings = get_settings()
 
     # 1. Seed Users
     users: list[dict[str, Any]] = [
@@ -47,8 +50,48 @@ async def seed_database(db: DatabaseClient | None = None) -> None:
             "district": "Pune",
         },
     ]
+
+    # Seed Demo Users for Evaluators (Idempotent, configurable via settings/.env)
+    if settings.enable_demo_login:
+        demo_users: list[dict[str, Any]] = [
+            {
+                "id": "user_demo_worker",
+                "username": settings.demo_worker_email,
+                "email": settings.demo_worker_email,
+                "hashed_password": hash_password(settings.demo_worker_password),
+                "full_name": "Anita Patil, Community Health Officer",
+                "role": RoleEnum.HEALTH_WORKER.value,
+                "centre_id": settings.demo_worker_facility_id,
+                "district": "Pune",
+            },
+            {
+                "id": "user_demo_admin",
+                "username": settings.demo_admin_email,
+                "email": settings.demo_admin_email,
+                "hashed_password": hash_password(settings.demo_admin_password),
+                "full_name": "Dr. Rajesh Sharma, District Health Officer (DHO)",
+                "role": RoleEnum.DISTRICT_ADMIN.value,
+                "centre_id": None,
+                "district": settings.demo_admin_district,
+            },
+            {
+                "id": "user_demo_state",
+                "username": settings.demo_state_email,
+                "email": settings.demo_state_email,
+                "hashed_password": hash_password(settings.demo_state_password),
+                "full_name": "Shri V. K. Deshmukh, State Directorate of Health Services",
+                "role": RoleEnum.STATE_VIEWER.value,
+                "centre_id": None,
+                "district": "All Districts (Maharashtra)",
+            },
+        ]
+        users.extend(demo_users)
+
     for u in users:
         await database.set_document("users", u["username"], u, merge=True)
+        # Also map by email if different from username
+        if u.get("email") and u["email"] != u["username"]:
+            await database.set_document("users", u["email"], u, merge=True)
 
     # 2. Generate 90 days of synthetic data for 12 centres, 40 medicines
     data = generate_90_day_history()

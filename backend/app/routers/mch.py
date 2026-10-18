@@ -8,6 +8,7 @@ from backend.app.models.mch import (
     MaternalCohortResponse,
     MCHSummaryResponse,
 )
+from backend.app.security import require_write_permission
 from backend.app.services.mch_service import MCHService, get_mch_service
 
 router = APIRouter(prefix="/mch", tags=["Maternal & Child Health"])
@@ -19,7 +20,11 @@ async def get_mch_summary(service: MCHService = Depends(get_mch_service)) -> MCH
     return await service.get_mch_summary()
 
 
-@router.post("/cohort", response_model=MaternalCohortResponse)
+@router.post(
+    "/cohort",
+    response_model=MaternalCohortResponse,
+    dependencies=[Depends(require_write_permission)],
+)
 async def record_maternal_cohort(
     payload: MaternalCohortCreate,
     service: MCHService = Depends(get_mch_service),

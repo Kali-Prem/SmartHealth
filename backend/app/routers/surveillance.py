@@ -37,6 +37,11 @@ async def submit_syndromic_report(
 
     Automatically triggers statistical anomaly analysis and alert creation if thresholds are breached.
     """
+    if current_user.get("role") == "state_viewer":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access denied: State Viewer role is strictly Read-Only and cannot submit syndromic reports.",
+        )
     return await service.record_syndromic_report(report, reported_by=current_user["username"])
 
 

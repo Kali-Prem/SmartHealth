@@ -1,6 +1,17 @@
 import React from 'react';
-import { Languages, Eye, Sun, Moon, Sparkles, Play } from 'lucide-react';
-import { Language } from '../types';
+import {
+  Languages,
+  Eye,
+  Sun,
+  Moon,
+  Sparkles,
+  Play,
+  UserCheck,
+  LogOut,
+  Stethoscope,
+  ShieldCheck,
+} from 'lucide-react';
+import { Language, AuthUser } from '../types';
 import { useTranslation } from '../i18n/translations';
 
 export type AppTheme = 'light' | 'dark' | 'high-contrast';
@@ -14,6 +25,9 @@ interface HeaderProps {
   onToggleContrast: () => void;
   onOpenCopilot: () => void;
   onLaunchDemo?: () => void;
+  currentUser?: AuthUser | null;
+  onSwitchRole?: () => void;
+  onLogout?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -25,6 +39,9 @@ export const Header: React.FC<HeaderProps> = ({
   onToggleContrast,
   onOpenCopilot,
   onLaunchDemo,
+  currentUser,
+  onSwitchRole,
+  onLogout,
 }) => {
   const t = useTranslation(language);
 
@@ -97,6 +114,85 @@ export const Header: React.FC<HeaderProps> = ({
               <Play size={14} fill="currentColor" />
               <span>{t.demoMode || 'Demo Mode'}</span>
             </button>
+          )}
+
+          {/* Active Persona Badge & Role Navigation */}
+          {currentUser && (
+            <div
+              className="navbar-auth-controls"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}
+            >
+              <div
+                className={`navbar-role-pill navbar-role-${
+                  currentUser.role === 'health_worker'
+                    ? 'worker'
+                    : currentUser.role === 'state_viewer'
+                    ? 'state'
+                    : 'admin'
+                }`}
+                title={`${currentUser.name} • ${currentUser.facility_name || currentUser.district || currentUser.role}`}
+                role="status"
+                aria-label={`Logged in as ${currentUser.name}, ${currentUser.role}`}
+              >
+                {currentUser.role === 'health_worker' ? (
+                  <Stethoscope size={14} aria-hidden="true" />
+                ) : currentUser.role === 'state_viewer' ? (
+                  <Eye size={14} aria-hidden="true" />
+                ) : (
+                  <ShieldCheck size={14} aria-hidden="true" />
+                )}
+                <span>
+                  {currentUser.role === 'health_worker'
+                    ? t.roleHealthWorker
+                    : currentUser.role === 'state_viewer'
+                    ? `${t.roleStateViewer} (${t.readOnlyBadge})`
+                    : t.roleDistrictAdmin}
+                </span>
+              </div>
+
+              {onSwitchRole && (
+                <button
+                  type="button"
+                  className="btn"
+                  onClick={onSwitchRole}
+                  style={{
+                    padding: '6px 11px',
+                    fontSize: '0.8rem',
+                    fontWeight: 600,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '5px',
+                  }}
+                  title="Switch to another Demo Role"
+                  aria-label={t.switchRole}
+                >
+                  <UserCheck size={14} aria-hidden="true" />
+                  <span>{t.switchRole}</span>
+                </button>
+              )}
+
+              {onLogout && (
+                <button
+                  type="button"
+                  className="btn"
+                  onClick={onLogout}
+                  style={{
+                    padding: '6px 10px',
+                    fontSize: '0.8rem',
+                    fontWeight: 600,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '5px',
+                    color: 'var(--text-secondary)',
+                  }}
+                  title="Logout"
+                  aria-label={t.logout}
+                >
+                  <LogOut size={14} aria-hidden="true" />
+                  <span>{t.logout}</span>
+                </button>
+              )}
+            </div>
           )}
 
           {/* Theme Selector: Light / Dark / High Contrast */}

@@ -17,7 +17,7 @@ from backend.app.models.operations import (
     LabTestAuditResponse,
     OperationsSummaryResponse,
 )
-from backend.app.security import get_current_user
+from backend.app.security import get_current_user, require_admin_execution
 from backend.app.services.operations_service import OperationsService, get_operations_service
 
 router = APIRouter(prefix="/operations", tags=["Health Centre Operations"])
@@ -43,6 +43,11 @@ async def record_daily_footfall(
     service: OperationsService = Depends(get_operations_service),
 ) -> FootfallLogResponse:
     """Submit daily patient outpatient and emergency department census."""
+    if current_user.get("role") == "state_viewer":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access denied: State Viewer role is strictly Read-Only and cannot submit operational data.",
+        )
     return await service.record_footfall(payload)
 
 
@@ -68,6 +73,11 @@ async def record_doctor_attendance(
     service: OperationsService = Depends(get_operations_service),
 ) -> DoctorAttendanceResponse:
     """Submit daily doctor roster and shift attendance."""
+    if current_user.get("role") == "state_viewer":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access denied: State Viewer role is strictly Read-Only and cannot submit operational data.",
+        )
     return await service.record_doctor_attendance(payload)
 
 
@@ -99,6 +109,11 @@ async def record_lab_test_audit(
     service: OperationsService = Depends(get_operations_service),
 ) -> LabTestAuditResponse:
     """Submit diagnostic test kit availability and laboratory equipment functional audit."""
+    if current_user.get("role") == "state_viewer":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access denied: State Viewer role is strictly Read-Only and cannot submit operational data.",
+        )
     return await service.record_lab_test_audit(payload)
 
 
@@ -160,7 +175,11 @@ async def get_deputation_recommendations(
     return await service.get_deputation_recommendations(target_centre_id=target_centre_id)
 
 
-@router.post("/deputation/execute", response_model=ExecuteDeputationResponse)
+@router.post(
+    "/deputation/execute",
+    response_model=ExecuteDeputationResponse,
+    dependencies=[Depends(require_admin_execution)],
+)
 async def execute_doctor_deputation(
     payload: ExecuteDeputationRequest,
     service: OperationsService = Depends(get_operations_service),
