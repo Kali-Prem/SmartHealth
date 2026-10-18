@@ -9,6 +9,32 @@ interface AiCopilotModalProps {
   language: Language;
 }
 
+interface SpeechRecognitionEventLike {
+  results: {
+    [index: number]: {
+      [index: number]: {
+        transcript: string;
+      };
+    };
+  };
+}
+
+interface SpeechRecognitionInstance {
+  continuous: boolean;
+  interimResults: boolean;
+  lang: string;
+  onresult: ((event: SpeechRecognitionEventLike) => void) | null;
+  onerror: (() => void) | null;
+  onend: (() => void) | null;
+  start: () => void;
+  stop: () => void;
+}
+
+interface WindowWithSpeech extends Window {
+  SpeechRecognition?: new () => SpeechRecognitionInstance;
+  webkitSpeechRecognition?: new () => SpeechRecognitionInstance;
+}
+
 export const AiCopilotModal: React.FC<AiCopilotModalProps> = ({
   isOpen,
   onClose,
@@ -26,6 +52,8 @@ export const AiCopilotModal: React.FC<AiCopilotModalProps> = ({
       text:
         language === 'hi'
           ? 'नमस्ते! मैं स्मार्टहेल्थ जिला एआई सलाहकार हूँ। आप पुणे जिले के 12 स्वास्थ्य केंद्रों, दवा स्टॉकआउट, डॉक्टर अनुपस्थिति या मरीज भार के बारे में पूछ सकते हैं।'
+          : language === 'mr'
+          ? 'नमस्कार! मी स्मार्टहेल्थ जिल्हा एआय सल्लागार आहे. आपण पुणे जिल्ह्यातील १२ आरोग्य केंद्रे, औषध साठा, डॉक्टर हजेरी किंवा रुग्ण भार याविषयी विचारू शकता.'
           : 'Welcome to SmartHealth AI Copilot. Ask about district stockouts, doctor absenteeism, patient footfall surges, or request resource redistribution plans.',
       actions: [
         'Run District Vulnerability Audit',
@@ -34,20 +62,20 @@ export const AiCopilotModal: React.FC<AiCopilotModalProps> = ({
     },
   ]);
 
-  const recognitionRef = useRef<any>(null);
+  const recognitionRef = useRef<SpeechRecognitionInstance | null>(null);
 
   useEffect(() => {
     // Initialize Web Speech API for voice input
-    const SpeechRecognition =
-      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    const win = window as unknown as WindowWithSpeech;
+    const SpeechRecognition = win.SpeechRecognition || win.webkitSpeechRecognition;
 
     if (SpeechRecognition) {
       const rec = new SpeechRecognition();
       rec.continuous = false;
       rec.interimResults = false;
-      rec.lang = language === 'hi' ? 'hi-IN' : 'en-IN';
+      rec.lang = language === 'hi' ? 'hi-IN' : language === 'mr' ? 'mr-IN' : 'en-IN';
 
-      rec.onresult = (event: any) => {
+      rec.onresult = (event: SpeechRecognitionEventLike) => {
         const transcript = event.results[0][0].transcript;
         setQuery(transcript);
         setIsListening(false);

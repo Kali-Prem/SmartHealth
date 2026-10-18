@@ -875,7 +875,7 @@ def generate_90_day_history() -> dict[str, list[dict[str, Any]]]:
 
         for idx, med in enumerate(ESSENTIAL_MEDICINES):
             m_id = f"stock_{c_id}_{idx + 1:03d}"
-            mrl = med["mrl"]
+            mrl = int(str(med["mrl"]))
 
             # Plant chronic stockouts
             if prob == "chronic_stockout":
@@ -985,7 +985,8 @@ def generate_90_day_history() -> dict[str, list[dict[str, Any]]]:
             )
 
             # --- (b) Daily Bed Status ---
-            total_beds = centre["infrastructure"]["beds_total"]
+            infra = centre.get("infrastructure", {})  # type: ignore[union-attr]
+            total_beds = int(infra.get("beds_total", 6)) if isinstance(infra, dict) else 6
             if prob == "overloaded" and c_id == "phc_001":
                 # Beds overflowing (100% - 125% saturation)
                 occupied = min(

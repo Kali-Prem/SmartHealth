@@ -1,5 +1,5 @@
 import React from 'react';
-import { Languages, Eye, Sun, Moon, Sparkles } from 'lucide-react';
+import { Languages, Eye, Sun, Moon, Sparkles, Play } from 'lucide-react';
 import { Language } from '../types';
 import { useTranslation } from '../i18n/translations';
 
@@ -13,6 +13,7 @@ interface HeaderProps {
   highContrast: boolean;
   onToggleContrast: () => void;
   onOpenCopilot: () => void;
+  onLaunchDemo?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -23,6 +24,7 @@ export const Header: React.FC<HeaderProps> = ({
   highContrast,
   onToggleContrast,
   onOpenCopilot,
+  onLaunchDemo,
 }) => {
   const t = useTranslation(language);
 
@@ -60,16 +62,42 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
 
         <div className="header-controls">
-          {/* Language Switcher */}
+          {/* Trilingual Switcher (English -> Hindi -> Marathi) */}
           <button
             type="button"
             className="btn"
-            onClick={() => onLanguageChange(language === 'en' ? 'hi' : 'en')}
-            aria-label={`Change language, currently ${language === 'en' ? 'English' : 'Hindi'}`}
+            onClick={() => {
+              const next: Record<Language, Language> = { en: 'hi', hi: 'mr', mr: 'en' };
+              onLanguageChange(next[language] || 'en');
+            }}
+            aria-label={`Change language, currently ${language === 'en' ? 'English' : language === 'hi' ? 'Hindi' : 'Marathi'}`}
+            title="Cycle Language (English / हिन्दी / मराठी)"
           >
             <Languages size={17} aria-hidden="true" />
-            <span>{language === 'en' ? 'हिन्दी' : 'English'}</span>
+            <span>{language === 'en' ? 'हिन्दी' : language === 'hi' ? 'मराठी' : 'English'}</span>
           </button>
+
+          {/* Interactive Demo Mode Button for Evaluators */}
+          {onLaunchDemo && (
+            <button
+              type="button"
+              className="btn"
+              onClick={onLaunchDemo}
+              aria-label="Launch Interactive Demo Mode"
+              title="Launch End-to-End Problem to Resolution Demo"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                borderColor: 'var(--brand-primary)',
+                color: 'var(--brand-primary)',
+                fontWeight: 700,
+              }}
+            >
+              <Play size={14} fill="currentColor" />
+              <span>{t.demoMode || 'Demo Mode'}</span>
+            </button>
+          )}
 
           {/* Theme Selector: Light / Dark / High Contrast */}
           <div className="theme-toggle-group" role="group" aria-label="Theme selection">
@@ -111,7 +139,13 @@ export const Header: React.FC<HeaderProps> = ({
             aria-label={t.copilot}
           >
             <Sparkles size={17} aria-hidden="true" />
-            <span>{language === 'hi' ? 'जेमिनी स्वास्थ्य सलाहकार' : 'Gemini AI Health Advisor'}</span>
+            <span>
+              {language === 'mr'
+                ? 'जेमिनी आरोग्य सल्लागार'
+                : language === 'hi'
+                ? 'जेमिनी स्वास्थ्य सलाहकार'
+                : 'Gemini AI Health Advisor'}
+            </span>
           </button>
         </div>
       </div>

@@ -137,14 +137,15 @@ describe('Milestone 2 - Google Maps & Haversine Redistribution Suite', () => {
     };
 
     // Spy on global fetch
-    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockImplementation(async (url: any) => {
-      if (typeof url === 'string' && url.includes('/api/v1/inventory/rebalance/optimize')) {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockImplementation(async (url: RequestInfo | URL) => {
+      const urlStr = typeof url === 'string' ? url : (url as URL).href || '';
+      if (urlStr.includes('/api/v1/inventory/rebalance/optimize')) {
         return {
           ok: true,
           json: async () => mockOptimizationResponse,
-        } as any;
+        } as Response;
       }
-      return { ok: false, status: 404 } as any;
+      return { ok: false, status: 404 } as Response;
     });
 
     render(

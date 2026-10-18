@@ -93,12 +93,12 @@ async def register_user(
     await db.set_document("users", payload.username, doc)
 
     return UserProfileResponse(
-        username=doc["username"],
-        email=doc["email"],
-        full_name=doc["full_name"],
-        role=doc["role"],
-        centre_id=doc["centre_id"],
-        district=doc["district"],
+        username=payload.username,
+        email=payload.email,
+        full_name=payload.full_name,
+        role=payload.role.value,
+        centre_id=payload.centre_id,
+        district=payload.district,
     )
 
 

@@ -37,13 +37,17 @@ async def list_centres(
     for a in alerts:
         if a.get("status") in ["active", "under_investigation"]:
             cid = a.get("centre_id")
-            alerts_per_centre[cid] = alerts_per_centre.get(cid, 0) + 1
+            if cid:
+                cid_str = str(cid)
+                alerts_per_centre[cid_str] = alerts_per_centre.get(cid_str, 0) + 1
 
     stockouts_per_centre: dict[str, int] = {}
     for item in inventory:
         if item.get("current_stock", 0) <= 0:
             cid = item.get("centre_id")
-            stockouts_per_centre[cid] = stockouts_per_centre.get(cid, 0) + 1
+            if cid:
+                cid_str = str(cid)
+                stockouts_per_centre[cid_str] = stockouts_per_centre.get(cid_str, 0) + 1
 
     filtered: list[CentreResponse] = []
     for c in all_centres:
@@ -162,6 +166,8 @@ async def update_centre(
     await db.set_document("centres", centre_id, updates, merge=True)
 
     updated_doc = await db.get_document("centres", centre_id)
+    if not updated_doc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Centre not found")
     updated_doc["active_alerts_count"] = 0
     updated_doc["stockout_count"] = 0
     return CentreResponse(**updated_doc)

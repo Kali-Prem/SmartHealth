@@ -1,4 +1,4 @@
-export type Language = 'en' | 'hi';
+export type Language = 'en' | 'hi' | 'mr';
 
 export type FacilityType = 'PHC' | 'CHC';
 
@@ -8,6 +8,7 @@ export interface Centre {
   id: string;
   name: string;
   name_hi: string;
+  name_mr?: string;
   facility_type: FacilityType;
   district: string;
   block: string;

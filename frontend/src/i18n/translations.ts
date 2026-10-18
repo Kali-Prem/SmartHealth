@@ -15,7 +15,7 @@ export const translations = {
     // High Contrast & Accessibility
     highContrast: 'High Contrast Mode',
     voiceInput: 'Voice Input',
-    listening: 'Listening... (Speak in English or Hindi)',
+    listening: 'Listening... (Speak in English, Hindi, or Marathi)',
 
     // Planted Problems Warnings
     alertsTitle: 'Critical Operational Alerts & Deficits Flagged',
@@ -101,6 +101,7 @@ export const translations = {
     stopListening: 'Stop Voice Input',
     deputationRecommendations: 'Recommended Emergency Doctor Deputations',
     solveAbsenteeism: 'Redistribute On-Duty Doctors',
+    demoMode: 'Interactive Demo Mode',
   },
   hi: {
     appTitle: 'स्मार्टहेल्थ',
@@ -116,7 +117,7 @@ export const translations = {
     // High Contrast & Accessibility
     highContrast: 'उच्च कंट्रास्ट मोड',
     voiceInput: 'आवाज इनपुट (बोलें)',
-    listening: 'सुन रहा है... (हिंदी या अंग्रेजी में बोलें)',
+    listening: 'सुन रहा है... (हिंदी, अंग्रेजी या मराठी में बोलें)',
 
     // Planted Problems Warnings
     alertsTitle: 'गंभीर परिचालन चेतावनियाँ और कमी की सूचना',
@@ -202,9 +203,115 @@ export const translations = {
     stopListening: 'बोलना बंद करें',
     deputationRecommendations: 'अनुशंसित आपातकालीन डॉक्टर प्रतिनियुक्ति',
     solveAbsenteeism: 'उपस्थित डॉक्टरों का पुनर्वितरण करें',
+    demoMode: 'इंटरएक्टिव डेमो मोड',
+  },
+  mr: {
+    appTitle: 'SmartHealth',
+    subtitle: 'जिल्हा आरोग्य नियंत्रण केंद्र (प्रा.आ.के./सा.आ.के. नेटवर्क)',
+    district: 'पुणे जिल्हा',
+    state: 'महाराष्ट्र',
+    dashboard: 'नियंत्रण कक्ष आणि विहंगावलोकन',
+    facilities: 'आरोग्य केंद्रे (१२)',
+    inventory: 'औषध साठा आणि पुनर्वितरण',
+    operations: 'दैनंदिन कामकाज आणि उपस्थिती',
+    copilot: 'जेमिनी एआय आरोग्य सल्लागार',
+
+    // High Contrast & Accessibility
+    highContrast: 'उच्च कॉन्ट्रास्ट मोड',
+    voiceInput: 'व्हॉइस इनपुट',
+    listening: 'ऐकत आहे... (मराठी, हिंदी किंवा इंग्रजीत बोला)',
+
+    // Planted Problems Warnings
+    alertsTitle: 'गंभीर ऑपरेशनल इशारे आणि त्रुटी',
+    chronicStockout: 'दीर्घकालीन औषध तुटवडा',
+    highDoctorAbsence: 'डॉक्टरांची उच्च अनुपस्थिती',
+    facilityOverloaded: 'केंद्रावर अतिरिक्त भार (क्षमता ओलांडली)',
+    interveneAction: 'हस्तक्षेप शिफारसी',
+
+    // KPIs
+    dailyFootfall: 'दैनंदिन रुग्ण संख्या',
+    doctorAttendance: 'डॉक्टर उपस्थिती प्रमाण',
+    bedSaturation: 'खाट उपलब्धता प्रमाण',
+    testReadiness: 'निदान चाचणी सज्जता',
+    vulnerableCentres: 'त्रुटी असलेली केंद्रे',
+
+    // Inventory
+    searchMedicine: 'औषधे शोधा (उदा. पॅरासिटामॉल, सर्पदंश लस, रेबीज)...',
+    allCategories: 'सर्व श्रेणी',
+    antibiotics: 'प्रतिजैविके (Antibiotics)',
+    analgesics: 'वेदनानाशक (Analgesics)',
+    antidotes: 'विषरोधक लस (Antivenom)',
+    vaccines: 'लसी (Vaccines)',
+    maternalHealth: 'मातृ आरोग्य',
+    stockStatus: 'साठा स्थिती',
+    stockout: 'साठा संपला (०)',
+    lowStock: 'कमी साठा (< पुनर्मागणी)',
+    normalStock: 'पुरेसा साठा',
+    lateralRebalance: 'केंद्रांमधील औषध पुनर्वितरण',
+    transferSuccess: 'औषध हस्तांतरण आदेश यशस्वीरित्या जारी केला',
+
+    // Facilities
+    filterByBlock: 'तालुक्यानुसार निवडा',
+    allBlocks: 'सर्व तालुके',
+    allTypes: 'सर्व प्रकार (प्रा.आ.के. व सा.आ.के.)',
+    inCharge: 'वैद्यकीय अधिकारी प्रभारी',
+    beds: 'खाटांची स्थिती',
+    doctors: 'वैद्यकीय अधिकारी',
+    viewDetails: 'केंद्राचे तपशील',
+
+    // Operations
+    patientFootfallTrend: '९०-दिवसीय रुग्ण संख्या कल',
+    doctorRoster: 'डॉक्टर हजेरी पत्रक आणि शिफ्ट नोंद',
+    labTestAudits: 'निदान चाचणी किट उपलब्धता आणि उपकरण आरोग्य',
+    emergencyVisits: 'तातडीचे / अपघात रुग्ण विभाग',
+    waitTime: 'सरासरी प्रतीक्षा वेळ',
+    minutes: 'मिनिटे',
+
+    // AI Copilot
+    askCopilot: 'जिल्हा जेमिनी एआय सल्लागाराला विचारा...',
+    suggestedQueries: 'त्वरित प्रशासकीय प्रश्न:',
+    queryStockout: 'शून्य सर्पदंश लस असलेली केंद्रे दाखवा आणि पुनर्वितरण योजना तयार करा',
+    queryAttendance: 'या आठवड्यात ५०% पेक्षा जास्त डॉक्टर गैरहजर असलेली केंद्रे कोणती?',
+    queryFootfall: 'वाघोली केंद्रावरील गर्दीचे विश्लेषण करा आणि भार संतुलन शिफारस करा',
+    send: 'विचारा',
+    clear: 'साफ करा',
+
+    // Milestone 2: District Map & Haversine Redistribution
+    districtMap: 'जिल्हा नकाशा (Google Maps)',
+    mapView: 'जिल्हा नकाशा',
+    rebalanceModalTitle: 'हॅवरसाइन औषध साठा पुनर्वितरण ऑप्टिमायझर',
+    geminiExplanationTitle: 'जेमिनी एआय वैद्यकीय आणि तार्किक समर्थन',
+    haversineDistance: 'हॅवरसाइन अंतर (ग्रेट-सर्कल)',
+    estimatedTransit: 'अंदाजे वाहतूक वेळ',
+    recommendedTransfer: 'शिफारस केलेले हस्तांतरण प्रमाण',
+    donorRemaining: 'देणाऱ्या केंद्राकडील राखीव साठा',
+    executeTransfer: 'पुष्टी करा आणि साठा हस्तांतरण रवाना करा',
+    executing: 'रवाना होत आहे...',
+    transferDone: 'हस्तांतरण यशस्वीरित्या पूर्ण झाले',
+    closestDonor: 'सर्वोत्तम जवळचे देणारे केंद्र',
+
+    // Milestone 3: Forecasting, Early Warnings & Staff Deputations
+    demandForecast: 'एआय मागणी अंदाज व पूर्वसूचना',
+    earlyWarnings: 'साठा संपण्याचा काउंटडाउन रडार',
+    daysRemaining: 'उर्वरित पुरवठा दिवस',
+    burnRate: 'दैनिक वापर दर',
+    predictedDemand: 'अनुमानित ३०-दिवसांची मागणी',
+    recommendedProcurement: 'अग्रिम मागणीपत्र (Indent)',
+    deputationModalTitle: 'स्मार्ट डॉक्टर प्रतिनियुक्ती सहायक',
+    executeDeputation: 'पुष्टी करा आणि प्रतिनियुक्ती आदेश जारी करा',
+    deputationSuccess: 'डॉक्टर प्रतिनियुक्ती आदेश यशस्वीरित्या जारी केला',
+    voiceAssistant: 'व्हॉइस सहाय्यक',
+    startListening: 'बोलणे सुरू करा',
+    stopListening: 'बोलणे थांबवा',
+    deputationRecommendations: 'तातडीच्या डॉक्टर प्रतिनियुक्ती शिफारसी',
+    solveAbsenteeism: 'उपस्थित डॉक्टरांचे पुनर्वितरण करा',
+    demoMode: 'परस्परसंवादी डेमो मोड',
   },
 };
 
-export const useTranslation = (lang: Language) => {
-  return translations[lang] || translations.en;
+export type TranslationKey = keyof typeof translations.en;
+export type TranslationDict = Record<TranslationKey, string>;
+
+export const useTranslation = (lang: Language): TranslationDict => {
+  return (translations[lang] || translations.en) as TranslationDict;
 };

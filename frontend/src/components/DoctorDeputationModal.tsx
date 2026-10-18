@@ -72,9 +72,9 @@ export const DoctorDeputationModal: React.FC<DoctorDeputationModalProps> = ({
             setSelectedCandidate(data[0].top_candidate);
           }
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
         if (isMounted) {
-          setError(err.message || 'Error fetching deputation recommendations');
+          setError(err instanceof Error ? err.message : 'Error fetching deputation recommendations');
         }
       } finally {
         if (isMounted) setLoading(false);
@@ -124,8 +124,8 @@ export const DoctorDeputationModal: React.FC<DoctorDeputationModalProps> = ({
       if (onDeputationExecuted) {
         onDeputationExecuted();
       }
-    } catch (err: any) {
-      setError(err.message || 'Failed to issue deputation order');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to issue deputation order');
     } finally {
       setExecuting(false);
     }

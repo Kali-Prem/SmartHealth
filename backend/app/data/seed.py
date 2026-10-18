@@ -1,4 +1,4 @@
-"""Seed initialization for SmartHealth database using synthetic 90-day district data."""
+from typing import Any
 
 from backend.app.data.sample_data import (
     INITIAL_MATERNAL_COHORTS,
@@ -15,7 +15,7 @@ async def seed_database(db: DatabaseClient | None = None) -> None:
     database = db or get_db()
 
     # 1. Seed Users
-    users = [
+    users: list[dict[str, Any]] = [
         {
             "id": "user_admin",
             "username": "admin",
@@ -79,7 +79,8 @@ async def seed_database(db: DatabaseClient | None = None) -> None:
 
     # 3. Seed Maternal Cohorts
     for cohort in INITIAL_MATERNAL_COHORTS:
-        await database.set_document("maternal_cohorts", cohort["id"], cohort, merge=True)
+        cohort_id = str(cohort["id"])
+        await database.set_document("maternal_cohorts", cohort_id, cohort, merge=True)
 
     # 4. Seed Syndromic Reports
     for idx, rep in enumerate(INITIAL_SYNDROMIC_REPORTS):

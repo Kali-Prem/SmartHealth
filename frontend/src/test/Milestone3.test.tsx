@@ -13,9 +13,9 @@ class MockSpeechRecognition {
   continuous = false;
   interimResults = false;
   lang = 'en-IN';
-  onresult: any = null;
-  onerror: any = null;
-  onend: any = null;
+  onresult: ((event: unknown) => void) | null = null;
+  onerror: (() => void) | null = null;
+  onend: (() => void) | null = null;
   start = vi.fn();
   stop = vi.fn();
 }
@@ -81,8 +81,8 @@ describe('Milestone 3 - Demand Forecasting, Deputations & Voice Input Suite', ()
       ],
     };
 
-    vi.spyOn(globalThis, 'fetch').mockImplementation((input: any) => {
-      const url = typeof input === 'string' ? input : input.url || '';
+    vi.spyOn(globalThis, 'fetch').mockImplementation((input: RequestInfo | URL) => {
+      const url = typeof input === 'string' ? input : (input as URL).href || '';
       if (url.includes('/inventory/early-warnings')) {
         return Promise.resolve({
           ok: true,
@@ -152,8 +152,8 @@ describe('Milestone 3 - Demand Forecasting, Deputations & Voice Input Suite', ()
       ],
     };
 
-    vi.spyOn(globalThis, 'fetch').mockImplementation((input: any) => {
-      const url = typeof input === 'string' ? input : input.url || '';
+    vi.spyOn(globalThis, 'fetch').mockImplementation((input: RequestInfo | URL) => {
+      const url = typeof input === 'string' ? input : (input as URL).href || '';
       if (url.includes('/inventory/early-warnings')) {
         return Promise.resolve({
           ok: true,
@@ -278,8 +278,8 @@ describe('Milestone 3 - Demand Forecasting, Deputations & Voice Input Suite', ()
       },
     ];
 
-    vi.spyOn(globalThis, 'fetch').mockImplementation((input: any) => {
-      const url = typeof input === 'string' ? input : input.url || '';
+    vi.spyOn(globalThis, 'fetch').mockImplementation((input: RequestInfo | URL) => {
+      const url = typeof input === 'string' ? input : (input as URL).href || '';
       if (url.includes('/deputation/recommendations')) {
         return Promise.resolve({
           ok: true,

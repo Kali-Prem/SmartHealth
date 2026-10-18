@@ -7,6 +7,8 @@ Provides:
 - District ranking & high-priority facility alerts
 """
 
+from typing import Any
+
 from backend.app.database import DatabaseClient, get_db
 from backend.app.models.mch import (
     ImmunizationAntigenMetric,
@@ -72,7 +74,7 @@ class MCHService:
         target = 48
 
         # In-depth antigen sequence
-        antigens_data = [
+        antigens_data: list[dict[str, Any]] = [
             {"antigen": "BCG (Birth)", "doses": 47, "prev": 48},
             {"antigen": "OPV-0 (Birth)", "doses": 46, "prev": 47},
             {"antigen": "Pentavalent-1 (6 wks)", "doses": 45, "prev": 46},
@@ -85,15 +87,16 @@ class MCHService:
 
         metrics: list[ImmunizationAntigenMetric] = []
         for a in antigens_data:
-            doses = a["doses"]
-            prev_doses = a["prev"]
+            antigen_name = str(a["antigen"])
+            doses = int(a["doses"])
+            prev_doses = int(a["prev"])
             cov = round((doses / target) * 100, 1)
             dropouts = max(0, prev_doses - doses)
             drop_rate = round((dropouts / prev_doses) * 100, 1) if prev_doses > 0 else 0.0
 
             metrics.append(
                 ImmunizationAntigenMetric(
-                    antigen=a["antigen"],
+                    antigen=antigen_name,
                     target_infants=target,
                     doses_administered=doses,
                     coverage_percent=cov,
@@ -103,7 +106,7 @@ class MCHService:
             )
 
         # Full Immunization Coverage defined by MR-1 / Penta-3 completion
-        fic_percent = round((antigens_data[4]["doses"] / target) * 100, 1)
+        fic_percent = round((int(antigens_data[4]["doses"]) / target) * 100, 1)
 
         return ImmunizationCohortResponse(
             centre_id=centre_id,

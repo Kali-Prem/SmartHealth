@@ -6,7 +6,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
 
 from backend.app.config import get_settings
@@ -94,8 +94,8 @@ elif os.path.exists(frontend_dir):
     app.mount("/static", StaticFiles(directory=frontend_dir), name="static")
 
 
-@app.get("/", include_in_schema=False)
-async def serve_index() -> FileResponse:
+@app.get("/", include_in_schema=False, response_model=None)
+async def serve_index() -> Response:
     """Serve the main accessible Single Page Application."""
     dist_index = os.path.join(dist_dir, "index.html")
     src_index = os.path.join(frontend_dir, "index.html")

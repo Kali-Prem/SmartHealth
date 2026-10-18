@@ -89,9 +89,9 @@ export const LateralRebalanceModal: React.FC<LateralRebalanceModalProps> = ({
             setSelectedCandidate(null);
           }
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
         if (isMounted) {
-          setError(err.message || 'Failed to calculate redistribution optimization');
+          setError(err instanceof Error ? err.message : 'Failed to calculate redistribution optimization');
         }
       } finally {
         if (isMounted) {
@@ -142,8 +142,8 @@ export const LateralRebalanceModal: React.FC<LateralRebalanceModalProps> = ({
       if (onTransferComplete) {
         onTransferComplete(result);
       }
-    } catch (err: any) {
-      setError(err.message || 'Execution error during lateral transfer');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Execution error during lateral transfer');
     } finally {
       setExecuting(false);
     }

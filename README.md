@@ -228,8 +228,25 @@ gcloud builds submit --config=cloudbuild.yaml .
 
 ---
 
+## 🎯 Problem Statement Alignment & Architecture Traceability Matrix
+
+SmartHealth directly addresses every requirement of the District Public Health Operations & Resource Allocation problem statement:
+
+| # | Problem Statement Requirement | Frontend UI Component | Backend Router | Domain Service Engine | Test Suite Verification |
+|---|-------------------------------|-----------------------|----------------|-----------------------|-------------------------|
+| **1** | **Real-Time Facility Telemetry & Status Monitoring** | [`FacilitiesView.tsx`](frontend/src/components/FacilitiesView.tsx), [`DistrictMapView.tsx`](frontend/src/components/DistrictMapView.tsx) | [`centres.py`](backend/app/routers/centres.py) | [`centre_service.py`](backend/app/services/centre_service.py) | [`test_centres.py`](tests/test_centres.py), [`App.test.tsx`](frontend/src/test/App.test.tsx) |
+| **2** | **Early Stockout Warning Radar & Consumption Burn Rates** | [`DemandForecastView.tsx`](frontend/src/components/DemandForecastView.tsx), [`InventoryView.tsx`](frontend/src/components/InventoryView.tsx) | [`inventory.py`](backend/app/routers/inventory.py) | [`inventory_service.py`](backend/app/services/inventory_service.py) | [`test_inventory.py`](tests/test_inventory.py), [`test_forecasting.py`](tests/test_forecasting.py) |
+| **3** | **AI Demand Forecasting & Predictive Advance Indenting** | [`DemandForecastView.tsx`](frontend/src/components/DemandForecastView.tsx) | [`inventory.py`](backend/app/routers/inventory.py) | [`inventory_service.py`](backend/app/services/inventory_service.py), [`gemini_service.py`](backend/app/services/gemini_service.py) | [`test_forecasting.py`](tests/test_forecasting.py), [`Milestone3.test.tsx`](frontend/src/test/Milestone3.test.tsx) |
+| **4** | **Spatial Lateral Redistribution Optimizer (Haversine Formula)** | [`LateralRebalanceModal.tsx`](frontend/src/components/LateralRebalanceModal.tsx) | [`inventory.py`](backend/app/routers/inventory.py) | [`inventory_service.py`](backend/app/services/inventory_service.py) | [`test_redistribution.py`](tests/test_redistribution.py), [`Milestone2.test.tsx`](frontend/src/test/Milestone2.test.tsx) |
+| **5** | **Underperforming & Deficit Centre Hotspot Surveillance** | [`UnderperformingAlertBanner.tsx`](frontend/src/components/UnderperformingAlertBanner.tsx), [`TopPrioritiesPanel.tsx`](frontend/src/components/TopPrioritiesPanel.tsx) | [`operations.py`](backend/app/routers/operations.py), [`surveillance.py`](backend/app/routers/surveillance.py) | [`operations_service.py`](backend/app/services/operations_service.py), [`cvi_scorer.py`](backend/app/services/cvi_scorer.py) | [`test_operations.py`](tests/test_operations.py), [`test_surveillance.py`](tests/test_surveillance.py) |
+| **6** | **Trilingual Administrative Accessibility (EN / HI / MR)** | [`Header.tsx`](frontend/src/components/Header.tsx), [`translations.ts`](frontend/src/i18n/translations.ts) | N/A (Client-side i18n + WCAG 2.1 AA token system) | [`translations.ts`](frontend/src/i18n/translations.ts) | [`Accessibility.test.tsx`](frontend/src/test/Accessibility.test.tsx), [`App.test.tsx`](frontend/src/test/App.test.tsx) |
+| **7** | **Interactive 4-Step Evaluator Demo Walkthrough** | [`InteractiveDemoModal.tsx`](frontend/src/components/InteractiveDemoModal.tsx) | [`inventory.py`](backend/app/routers/inventory.py) | [`inventory_service.py`](backend/app/services/inventory_service.py) | [`App.test.tsx`](frontend/src/test/App.test.tsx) (interactive step-through test) |
+
+---
+
 ## 👥 Contributors & Hackathon Team
 - **Built for**: Google Cloud / Gemini AI Hackathon
 - **Architecture**: Domain-Driven Design (FastAPI + React 19 + TypeScript + Google Gemini + Cloud Firestore)
 - **Author**: Antigravity Pair-Programming Team
+
 

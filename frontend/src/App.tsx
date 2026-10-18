@@ -13,6 +13,7 @@ import { AiCopilotModal } from './components/AiCopilotModal';
 import { LateralRebalanceModal } from './components/LateralRebalanceModal';
 import { DemandForecastView } from './components/DemandForecastView';
 import { DoctorDeputationModal } from './components/DoctorDeputationModal';
+import { InteractiveDemoModal } from './components/InteractiveDemoModal';
 import {
   Language,
   Centre,
@@ -23,419 +24,7 @@ import {
   OperationsSummary,
 } from './types';
 
-// Realistic fallback synthetic data matching the backend generator
-const INITIAL_CENTRES: Centre[] = [
-  {
-    id: 'phc_001',
-    name: 'Wagholi Primary Health Centre',
-    name_hi: 'वाघोली प्राथमिक स्वास्थ्य केंद्र',
-    facility_type: 'PHC',
-    district: 'Pune',
-    block: 'Haveli',
-    pincode: '412207',
-    latitude: 18.5793,
-    longitude: 73.9814,
-    catchment_population: 58400,
-    in_charge_doctor: 'Dr. Rahul Deshmukh, MBBS, DNB',
-    phone_number: '+91 20 2705 1200',
-    operational_status: 'critical',
-    problem_type: 'overloaded',
-    staffing: {
-      medical_officers_sanctioned: 2,
-      medical_officers_in_position: 2,
-      specialists_sanctioned: 0,
-      specialists_in_position: 0,
-      staff_nurses_in_position: 4,
-      pharmacists_in_position: 1,
-      lab_technicians_in_position: 1,
-      anm_in_position: 8,
-      asha_workers: 24,
-    },
-    infrastructure: {
-      beds_total: 8,
-      beds_occupied: 9,
-      cold_chain_functional: true,
-      cold_chain_temperature_c: 4.2,
-      power_backup_functional: true,
-      water_supply_24x7: true,
-      ambulance_available: true,
-      lab_testing_active: true,
-    },
-  },
-  {
-    id: 'phc_002',
-    name: 'Khadakwasla Primary Health Centre',
-    name_hi: 'खडकवासला प्राथमिक स्वास्थ्य केंद्र',
-    facility_type: 'PHC',
-    district: 'Pune',
-    block: 'Haveli',
-    pincode: '411024',
-    latitude: 18.4385,
-    longitude: 73.7658,
-    catchment_population: 34200,
-    in_charge_doctor: 'Dr. Priya Kulkarni, MBBS',
-    phone_number: '+91 20 2438 9011',
-    operational_status: 'optimal',
-    infrastructure: {
-      beds_total: 6,
-      beds_occupied: 3,
-      cold_chain_functional: true,
-      cold_chain_temperature_c: 3.8,
-      power_backup_functional: true,
-      water_supply_24x7: true,
-      ambulance_available: true,
-      lab_testing_active: true,
-    },
-  },
-  {
-    id: 'phc_003',
-    name: 'Ghogargaon Primary Health Centre (Tribal)',
-    name_hi: 'घोगरगाव प्राथमिक स्वास्थ्य केंद्र (आदिवासी)',
-    facility_type: 'PHC',
-    district: 'Pune',
-    block: 'Ambegaon',
-    pincode: '410503',
-    latitude: 19.0621,
-    longitude: 73.7412,
-    catchment_population: 24600,
-    in_charge_doctor: 'Dr. Sandeep Borde, MBBS',
-    phone_number: '+91 2133 2841 02',
-    operational_status: 'critical',
-    problem_type: 'chronic_stockout',
-    infrastructure: {
-      beds_total: 6,
-      beds_occupied: 4,
-      cold_chain_functional: true,
-      cold_chain_temperature_c: 4.1,
-      power_backup_functional: false,
-      water_supply_24x7: false,
-      ambulance_available: true,
-      lab_testing_active: true,
-    },
-  },
-  {
-    id: 'phc_004',
-    name: 'Ghodegaon Primary Health Centre',
-    name_hi: 'घोडेगाव प्राथमिक स्वास्थ्य केंद्र',
-    facility_type: 'PHC',
-    district: 'Pune',
-    block: 'Ambegaon',
-    pincode: '412408',
-    latitude: 19.0432,
-    longitude: 73.8219,
-    catchment_population: 29800,
-    in_charge_doctor: 'Dr. Archana Thorat, MBBS',
-    phone_number: '+91 2133 2622 15',
-    operational_status: 'optimal',
-    infrastructure: {
-      beds_total: 6,
-      beds_occupied: 2,
-      cold_chain_functional: true,
-      cold_chain_temperature_c: 4.0,
-      power_backup_functional: true,
-      water_supply_24x7: true,
-      ambulance_available: true,
-      lab_testing_active: true,
-    },
-  },
-  {
-    id: 'phc_005',
-    name: 'Narayangaon Primary Health Centre',
-    name_hi: 'नारायणगाव प्राथमिक स्वास्थ्य केंद्र',
-    facility_type: 'PHC',
-    district: 'Pune',
-    block: 'Junnar',
-    pincode: '410504',
-    latitude: 19.1234,
-    longitude: 73.9812,
-    catchment_population: 31200,
-    in_charge_doctor: 'Dr. Mahesh Jadhav, MBBS',
-    phone_number: '+91 2132 2420 19',
-    operational_status: 'critical',
-    problem_type: 'high_doctor_absence',
-    infrastructure: {
-      beds_total: 6,
-      beds_occupied: 3,
-      cold_chain_functional: true,
-      cold_chain_temperature_c: 4.5,
-      power_backup_functional: true,
-      water_supply_24x7: true,
-      ambulance_available: true,
-      lab_testing_active: true,
-    },
-  },
-  {
-    id: 'phc_006',
-    name: 'Shikrapur Primary Health Centre',
-    name_hi: 'शिक्रापूर प्राथमिक स्वास्थ्य केंद्र',
-    facility_type: 'PHC',
-    district: 'Pune',
-    block: 'Shirur',
-    pincode: '412208',
-    latitude: 18.7345,
-    longitude: 74.1209,
-    catchment_population: 38900,
-    in_charge_doctor: 'Dr. Anita Shinde, MBBS',
-    phone_number: '+91 2137 2862 30',
-    operational_status: 'warning',
-    problem_type: 'high_doctor_absence',
-    infrastructure: {
-      beds_total: 6,
-      beds_occupied: 3,
-      cold_chain_functional: true,
-      cold_chain_temperature_c: 4.0,
-      power_backup_functional: true,
-      water_supply_24x7: true,
-      ambulance_available: true,
-      lab_testing_active: true,
-    },
-  },
-  {
-    id: 'phc_007',
-    name: 'Alandi Primary Health Centre',
-    name_hi: 'आळंदी प्राथमिक स्वास्थ्य केंद्र',
-    facility_type: 'PHC',
-    district: 'Pune',
-    block: 'Khed',
-    pincode: '412105',
-    latitude: 18.6771,
-    longitude: 73.8967,
-    catchment_population: 41200,
-    in_charge_doctor: 'Dr. Deepak Bhosale, MBBS',
-    phone_number: '+91 20 2718 5220',
-    operational_status: 'critical',
-    problem_type: 'chronic_stockout',
-    infrastructure: {
-      beds_total: 8,
-      beds_occupied: 5,
-      cold_chain_functional: true,
-      cold_chain_temperature_c: 3.9,
-      power_backup_functional: true,
-      water_supply_24x7: true,
-      ambulance_available: true,
-      lab_testing_active: true,
-    },
-  },
-  {
-    id: 'phc_008',
-    name: 'Manchar Primary Health Centre',
-    name_hi: 'मंचर प्राथमिक स्वास्थ्य केंद्र',
-    facility_type: 'PHC',
-    district: 'Pune',
-    block: 'Ambegaon',
-    pincode: '410503',
-    latitude: 19.0012,
-    longitude: 73.9456,
-    catchment_population: 36500,
-    in_charge_doctor: 'Dr. Kavita Wagh, MBBS',
-    phone_number: '+91 2133 2233 44',
-    operational_status: 'warning',
-    problem_type: 'chronic_stockout',
-    infrastructure: {
-      beds_total: 6,
-      beds_occupied: 4,
-      cold_chain_functional: true,
-      cold_chain_temperature_c: 4.3,
-      power_backup_functional: true,
-      water_supply_24x7: true,
-      ambulance_available: true,
-      lab_testing_active: true,
-    },
-  },
-  {
-    id: 'chc_001',
-    name: 'Baramati Community Health Centre',
-    name_hi: 'बारामती सामुदायिक स्वास्थ्य केंद्र',
-    facility_type: 'CHC',
-    district: 'Pune',
-    block: 'Baramati',
-    pincode: '413102',
-    latitude: 18.1519,
-    longitude: 74.5772,
-    catchment_population: 125000,
-    in_charge_doctor: 'Dr. Ramesh Pawar, MS (General Surgery)',
-    phone_number: '+91 2112 2224 10',
-    operational_status: 'optimal',
-    infrastructure: {
-      beds_total: 30,
-      beds_occupied: 22,
-      cold_chain_functional: true,
-      cold_chain_temperature_c: 4.0,
-      power_backup_functional: true,
-      water_supply_24x7: true,
-      ambulance_available: true,
-      lab_testing_active: true,
-    },
-  },
-  {
-    id: 'chc_002',
-    name: 'Chakan Community Health Centre',
-    name_hi: 'चाकण सामुदायिक स्वास्थ्य केंद्र',
-    facility_type: 'CHC',
-    district: 'Pune',
-    block: 'Khed',
-    pincode: '410501',
-    latitude: 18.7587,
-    longitude: 73.8589,
-    catchment_population: 110000,
-    in_charge_doctor: 'Dr. Sunita Kadam, MD (Gynae)',
-    phone_number: '+91 2135 2490 80',
-    operational_status: 'optimal',
-    infrastructure: {
-      beds_total: 30,
-      beds_occupied: 24,
-      cold_chain_functional: true,
-      cold_chain_temperature_c: 3.7,
-      power_backup_functional: true,
-      water_supply_24x7: true,
-      ambulance_available: true,
-      lab_testing_active: true,
-    },
-  },
-  {
-    id: 'chc_003',
-    name: 'Junnar Rural Hospital / CHC',
-    name_hi: 'जुन्नर ग्रामीण रुग्णालय / सा.आ.के.',
-    facility_type: 'CHC',
-    district: 'Pune',
-    block: 'Junnar',
-    pincode: '410502',
-    latitude: 19.2067,
-    longitude: 73.8761,
-    catchment_population: 98000,
-    in_charge_doctor: 'Dr. Ajay More, MD (Medicine)',
-    phone_number: '+91 2132 2221 00',
-    operational_status: 'optimal',
-    infrastructure: {
-      beds_total: 30,
-      beds_occupied: 19,
-      cold_chain_functional: true,
-      cold_chain_temperature_c: 4.1,
-      power_backup_functional: true,
-      water_supply_24x7: true,
-      ambulance_available: true,
-      lab_testing_active: true,
-    },
-  },
-  {
-    id: 'chc_004',
-    name: 'Shirur Sub-District Hospital / CHC',
-    name_hi: 'शिरूर उप-जिल्हा रुग्णालय / सा.आ.के.',
-    facility_type: 'CHC',
-    district: 'Pune',
-    block: 'Shirur',
-    pincode: '412210',
-    latitude: 18.8267,
-    longitude: 74.3789,
-    catchment_population: 140000,
-    in_charge_doctor: 'Dr. Vandana Jagtap, MS (Obstetrics)',
-    phone_number: '+91 2137 2220 50',
-    operational_status: 'optimal',
-    infrastructure: {
-      beds_total: 30,
-      beds_occupied: 26,
-      cold_chain_functional: true,
-      cold_chain_temperature_c: 4.0,
-      power_backup_functional: true,
-      water_supply_24x7: true,
-      ambulance_available: true,
-      lab_testing_active: true,
-    },
-  },
-];
-
-const INITIAL_MEDICINES: StockItem[] = [
-  {
-    id: 'phc_003_anti_venom',
-    centre_id: 'phc_003',
-    centre_name: 'Ghogargaon PHC (Tribal)',
-    block: 'Ambegaon',
-    item_name: 'Snake Antivenom Polyvalent IP',
-    item_name_hi: 'सर्पदंश विषरोधी इंजेक्शन',
-    category: 'anti_venom',
-    current_stock: 0,
-    unit: 'vials',
-    reorder_level: 10,
-    expiry_date: '2027-08-31',
-    status: 'stockout',
-    days_of_supply_remaining: 0,
-  },
-  {
-    id: 'phc_003_rabies_vaccine',
-    centre_id: 'phc_003',
-    centre_name: 'Ghogargaon PHC (Tribal)',
-    block: 'Ambegaon',
-    item_name: 'Rabies Vaccine Human IP',
-    item_name_hi: 'रेबीज रोधी टीका',
-    category: 'vaccine',
-    current_stock: 0,
-    unit: 'vials',
-    reorder_level: 25,
-    expiry_date: '2027-06-30',
-    status: 'stockout',
-    days_of_supply_remaining: 0,
-  },
-  {
-    id: 'phc_007_amoxicillin',
-    centre_id: 'phc_007',
-    centre_name: 'Alandi PHC',
-    block: 'Khed',
-    item_name: 'Amoxicillin 500mg Capsules',
-    item_name_hi: 'अमोक्सिसिलिन ५०० मि.ग्रा.',
-    category: 'antibiotic',
-    current_stock: 0,
-    unit: 'strips',
-    reorder_level: 150,
-    expiry_date: '2027-04-30',
-    status: 'stockout',
-    days_of_supply_remaining: 0,
-  },
-  {
-    id: 'phc_008_oxytocin',
-    centre_id: 'phc_008',
-    centre_name: 'Manchar PHC',
-    block: 'Ambegaon',
-    item_name: 'Oxytocin Injection 5 IU/ml',
-    item_name_hi: 'ऑक्सीटोसिन इंजेक्शन ५ IU',
-    category: 'maternal_health',
-    current_stock: 0,
-    unit: 'ampoules',
-    reorder_level: 40,
-    expiry_date: '2027-09-30',
-    status: 'stockout',
-    days_of_supply_remaining: 0,
-  },
-  {
-    id: 'phc_001_paracetamol',
-    centre_id: 'phc_001',
-    centre_name: 'Wagholi PHC',
-    block: 'Haveli',
-    item_name: 'Paracetamol 500mg Tablets',
-    item_name_hi: 'पैरासिटामोल ५०० मि.ग्रा.',
-    category: 'analgesic',
-    current_stock: 450,
-    unit: 'strips',
-    reorder_level: 200,
-    expiry_date: '2028-01-31',
-    status: 'normal',
-    days_of_supply_remaining: 18,
-  },
-  {
-    id: 'chc_002_anti_venom',
-    centre_id: 'chc_002',
-    centre_name: 'Chakan CHC',
-    block: 'Khed',
-    item_name: 'Snake Antivenom Polyvalent IP',
-    item_name_hi: 'सर्पदंश विषरोधी इंजेक्शन',
-    category: 'anti_venom',
-    current_stock: 45,
-    unit: 'vials',
-    reorder_level: 15,
-    expiry_date: '2027-11-30',
-    status: 'normal',
-    days_of_supply_remaining: 45,
-  },
-];
+import { INITIAL_CENTRES, INITIAL_MEDICINES } from './data/initialData';
 
 export const App: React.FC = () => {
   const [language, setLanguage] = useState<Language>('en');
@@ -462,6 +51,7 @@ export const App: React.FC = () => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [activeTab, setActiveTab] = useState<TabKey>('dashboard');
   const [isCopilotOpen, setIsCopilotOpen] = useState(false);
+  const [isDemoOpen, setIsDemoOpen] = useState(false);
 
   useEffect(() => {
     try {
@@ -532,8 +122,8 @@ export const App: React.FC = () => {
         const sumData = await sumRes.json();
         setSummary(sumData);
       }
-    } catch (err: any) {
-      setInventoryError(err?.message || 'Failed to refresh medicine inventory');
+    } catch (err: unknown) {
+      setInventoryError(err instanceof Error ? err.message : 'Failed to refresh medicine inventory');
     } finally {
       setLoadingInventory(false);
     }
@@ -681,6 +271,7 @@ export const App: React.FC = () => {
           highContrast={highContrast}
           onToggleContrast={toggleContrast}
           onOpenCopilot={() => setIsCopilotOpen(true)}
+          onLaunchDemo={() => setIsDemoOpen(true)}
         />
 
         <div className="app-shell">
@@ -865,6 +456,19 @@ export const App: React.FC = () => {
           }}
         />
       )}
+      {/* Evaluator Interactive Demo Modal */}
+      <InteractiveDemoModal
+        isOpen={isDemoOpen}
+        onClose={() => setIsDemoOpen(false)}
+        language={language}
+        onExecuteSuccess={(_msg) => {
+          refreshInventory();
+          fetch('/api/v1/operations/summary')
+            .then((r) => r.ok && r.json())
+            .then((data) => data && setSummary(data))
+            .catch(() => {});
+        }}
+      />
     </div>
   </ToastProvider>
   );
