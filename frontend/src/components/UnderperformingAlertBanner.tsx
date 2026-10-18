@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import {
-  AlertCircle,
+  ShieldAlert,
   AlertOctagon,
   UserX,
   Activity,
@@ -22,6 +22,8 @@ interface UnderperformingAlertBannerProps {
   onOpenForecast?: () => void;
 }
 
+type DeficitFilter = 'all' | 'stockout' | 'absence' | 'overloaded';
+
 export const UnderperformingAlertBanner: React.FC<UnderperformingAlertBannerProps> = ({
   language,
   onSelectCentre,
@@ -31,6 +33,7 @@ export const UnderperformingAlertBanner: React.FC<UnderperformingAlertBannerProp
 }) => {
   const t = useTranslation(language);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [activeFilter, setActiveFilter] = useState<DeficitFilter>('all');
 
   const toggleExpand = (id: string) => {
     setExpandedId((prev) => (prev === id ? null : id));
@@ -42,6 +45,7 @@ export const UnderperformingAlertBanner: React.FC<UnderperformingAlertBannerProp
       name: language === 'hi' ? 'घोगरगाव प्राथमिक स्वास्थ्य केंद्र (Ghogargaon PHC)' : 'Ghogargaon PHC (Tribal)',
       block: 'Ambegaon Block',
       type: 'stockout' as const,
+      priority: 'P1 Urgent',
       title: t.chronicStockout,
       details:
         language === 'hi'
@@ -56,6 +60,7 @@ export const UnderperformingAlertBanner: React.FC<UnderperformingAlertBannerProp
       name: language === 'hi' ? 'आळंदी प्राथमिक स्वास्थ्य केंद्र (Alandi PHC)' : 'Alandi PHC',
       block: 'Khed Block',
       type: 'stockout' as const,
+      priority: 'P1 Urgent',
       title: t.chronicStockout,
       details:
         language === 'hi'
@@ -70,6 +75,7 @@ export const UnderperformingAlertBanner: React.FC<UnderperformingAlertBannerProp
       name: language === 'hi' ? 'मंचर प्राथमिक स्वास्थ्य केंद्र (Manchar PHC)' : 'Manchar PHC',
       block: 'Ambegaon Block',
       type: 'stockout' as const,
+      priority: 'P1 Urgent',
       title: t.chronicStockout,
       details:
         language === 'hi'
@@ -84,6 +90,7 @@ export const UnderperformingAlertBanner: React.FC<UnderperformingAlertBannerProp
       name: language === 'hi' ? 'नारायणगाव प्राथमिक स्वास्थ्य केंद्र (Narayangaon PHC)' : 'Narayangaon PHC',
       block: 'Junnar Block',
       type: 'absence' as const,
+      priority: 'P2 Staffing',
       title: t.highDoctorAbsence,
       details:
         language === 'hi'
@@ -98,6 +105,7 @@ export const UnderperformingAlertBanner: React.FC<UnderperformingAlertBannerProp
       name: language === 'hi' ? 'शिक्रापूर प्राथमिक स्वास्थ्य केंद्र (Shikrapur PHC)' : 'Shikrapur PHC',
       block: 'Shirur Block',
       type: 'absence' as const,
+      priority: 'P2 Staffing',
       title: t.highDoctorAbsence,
       details:
         language === 'hi'
@@ -112,6 +120,7 @@ export const UnderperformingAlertBanner: React.FC<UnderperformingAlertBannerProp
       name: language === 'hi' ? 'वाघोली प्राथमिक स्वास्थ्य केंद्र (Wagholi PHC)' : 'Wagholi PHC (Peri-Urban)',
       block: 'Haveli Block',
       type: 'overloaded' as const,
+      priority: 'P2 Surge',
       title: t.facilityOverloaded,
       details:
         language === 'hi'
@@ -123,24 +132,78 @@ export const UnderperformingAlertBanner: React.FC<UnderperformingAlertBannerProp
     },
   ];
 
+  const filteredProblems = plantedProblems.filter(
+    (p) => activeFilter === 'all' || p.type === activeFilter
+  );
+
+  const filterOptions: { key: DeficitFilter; label: string; count: number }[] = [
+    {
+      key: 'all',
+      label: language === 'mr' ? 'सर्व' : language === 'hi' ? 'सभी' : 'All Deficits',
+      count: 6,
+    },
+    {
+      key: 'stockout',
+      label: language === 'mr' ? 'औषध तुटवडा' : language === 'hi' ? 'दवा स्टॉकआउट' : 'Medicine Stockout',
+      count: 3,
+    },
+    {
+      key: 'absence',
+      label: language === 'mr' ? 'डॉक्टर गैरहजेरी' : language === 'hi' ? 'डॉक्टर अनुपस्थिति' : 'Doctor Absence',
+      count: 2,
+    },
+    {
+      key: 'overloaded',
+      label: language === 'mr' ? 'अतिभारित' : language === 'hi' ? 'अतिभारित' : 'Overcrowding',
+      count: 1,
+    },
+  ];
+
   return (
-    <div
+    <section
       className="alerts-banner-container"
       role="region"
       aria-label="Critical Operational Alerts & Deficits Flagged"
     >
       <div className="alerts-header">
-        <div className="alerts-title">
-          <AlertCircle size={22} aria-hidden="true" />
-          <span>{t.alertsTitle}</span>
+        <div className="alerts-header-left">
+          <div className="alerts-icon-wrap" aria-hidden="true">
+            <ShieldAlert size={20} />
+          </div>
+          <div>
+            <h2 className="alerts-title">{t.alertsTitle}</h2>
+            <p className="alerts-subtitle">
+              <span className="live-status-pulse" aria-hidden="true" />
+              <span>
+                {language === 'mr'
+                  ? 'तातडीच्या हस्तक्षेपाची गरज असलेली ६ आरोग्य केंद्रे • सक्रिय नियंत्रण कक्ष'
+                  : language === 'hi'
+                  ? 'तत्काल प्रशासनिक हस्तक्षेप की आवश्यकता वाले 6 केंद्र • सक्रिय नियंत्रण कक्ष'
+                  : '6 facilities requiring immediate intervention • Live Telemetry Surveillance'}
+              </span>
+            </p>
+          </div>
         </div>
-        <div style={{ fontSize: '0.84rem', color: 'var(--text-muted)' }}>
-          <strong>6 facilities</strong> requiring immediate administrative intervention
+
+        {/* Filter Pills */}
+        <div className="alerts-filter-group" role="group" aria-label="Filter Deficits">
+          {filterOptions.map((opt) => (
+            <button
+              key={opt.key}
+              type="button"
+              className={`alerts-filter-btn ${activeFilter === opt.key ? 'active' : ''}`}
+              onClick={() => setActiveFilter(opt.key)}
+              aria-pressed={activeFilter === opt.key}
+            >
+              <span>{opt.label}</span>
+              <span className="filter-count-badge">{opt.count}</span>
+            </button>
+          ))}
         </div>
       </div>
 
       <div className="planted-problems-list">
-        {plantedProblems.map((prob) => {
+        {filteredProblems.map((prob) => {
           const isExpanded = expandedId === prob.id;
 
           return (
@@ -149,7 +212,7 @@ export const UnderperformingAlertBanner: React.FC<UnderperformingAlertBannerProp
               className={`problem-card ${prob.type}`}
               aria-label={`${prob.name}: ${prob.tag}`}
             >
-              {/* Row 1: Separate badge line with severity icon AND explicit text label */}
+              {/* Row 1: Category Tag & Priority Pill */}
               <div className="problem-meta-top">
                 <span className={`problem-tag ${prob.type}`}>
                   {prob.type === 'stockout' && <AlertOctagon size={13} aria-hidden="true" />}
@@ -157,37 +220,22 @@ export const UnderperformingAlertBanner: React.FC<UnderperformingAlertBannerProp
                   {prob.type === 'overloaded' && <Activity size={13} aria-hidden="true" />}
                   <span>{prob.tag}</span>
                 </span>
-                <span
-                  style={{
-                    fontSize: '0.72rem',
-                    fontWeight: 700,
-                    textTransform: 'uppercase',
-                    color:
-                      prob.type === 'stockout'
-                        ? 'var(--accent-rose)'
-                        : prob.type === 'absence'
-                          ? 'var(--accent-amber)'
-                          : 'var(--accent-indigo)',
-                  }}
-                >
-                  {prob.title}
+                <span className={`problem-priority-pill ${prob.type}`}>
+                  {prob.priority}
                 </span>
               </div>
 
-              {/* Row 2: Facility Name */}
-              <div>
+              {/* Row 2: Facility Name & Block */}
+              <div className="problem-centre-info">
                 <h3 className="problem-centre-name">{prob.name}</h3>
-                <div
-                  className="problem-location-badge"
-                  style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '2px' }}
-                >
+                <div className="problem-location-badge">
                   <MapPin size={13} aria-hidden="true" />
                   <span>{prob.block}</span>
                 </div>
               </div>
 
-              {/* Row 3: Description with line clamp and accessible expand */}
-              <div>
+              {/* Row 3: Description with clamp & toggle */}
+              <div className="problem-body">
                 <p
                   className="problem-description"
                   style={{
@@ -202,19 +250,7 @@ export const UnderperformingAlertBanner: React.FC<UnderperformingAlertBannerProp
                 <button
                   type="button"
                   onClick={() => toggleExpand(prob.id)}
-                  style={{
-                    background: 'none',
-                    border: 'none',
-                    color: 'var(--brand-primary)',
-                    fontSize: '0.78rem',
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '2px',
-                    padding: '2px 0',
-                    marginTop: '4px',
-                  }}
+                  className="problem-expand-btn"
                   aria-expanded={isExpanded}
                 >
                   <span>{isExpanded ? 'Show less' : 'View details'}</span>
@@ -222,12 +258,11 @@ export const UnderperformingAlertBanner: React.FC<UnderperformingAlertBannerProp
                 </button>
               </div>
 
-              {/* Row 4: Primary action + Secondary ghost action button */}
+              {/* Row 4: Professional Action Buttons */}
               <div className="problem-card-actions">
                 <button
                   type="button"
-                  className={prob.type === 'stockout' ? 'btn btn-rose' : 'btn btn-primary'}
-                  style={{ flex: 1, padding: '8px 12px', fontSize: '0.82rem' }}
+                  className="btn btn-primary problem-action-btn"
                   onClick={prob.action}
                   aria-label={`${prob.actionText} for ${prob.name}`}
                 >
@@ -236,13 +271,12 @@ export const UnderperformingAlertBanner: React.FC<UnderperformingAlertBannerProp
                 </button>
                 <button
                   type="button"
-                  className="btn btn-ghost"
-                  style={{ padding: '8px 12px', fontSize: '0.82rem' }}
+                  className="btn btn-ghost problem-view-btn"
                   onClick={() => onSelectCentre(prob.id)}
                   aria-label={`View facility details for ${prob.name}`}
                   title="View Facility Details"
                 >
-                  <Eye size={15} aria-hidden="true" />
+                  <Eye size={14} aria-hidden="true" />
                   <span>View</span>
                 </button>
               </div>
@@ -250,6 +284,6 @@ export const UnderperformingAlertBanner: React.FC<UnderperformingAlertBannerProp
           );
         })}
       </div>
-    </div>
+    </section>
   );
 };
