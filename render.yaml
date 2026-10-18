@@ -1,0 +1,25 @@
+# ==============================================================================
+# Render Blueprint Specification for SmartHealth
+# https://render.com/docs/blueprint-spec
+# ==============================================================================
+services:
+  - type: web
+    name: smarthealth
+    runtime: docker
+    plan: free
+    region: singapore
+    dockerfilePath: Dockerfile
+    healthCheckPath: /healthz
+    envVars:
+      - key: ENVIRONMENT
+        value: production
+      - key: DEBUG
+        value: "false"
+      - key: USE_MOCK_DB
+        value: "true"
+      - key: RATE_LIMIT_PER_MINUTE
+        value: "120"
+      - key: GEMINI_MODEL
+        value: gemini-2.5-flash
+      - key: GEMINI_API_KEY
+        sync: false
