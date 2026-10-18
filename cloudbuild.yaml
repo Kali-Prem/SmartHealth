@@ -1,0 +1,55 @@
+# ==============================================================================
+# Google Cloud Build & Cloud Run Automated Deployment
+# SmartHealth: Multilingual AI Health Command Platform (PHC/CHC Network)
+# ==============================================================================
+
+steps:
+  # 1. Build the multi-stage container image (React frontend + FastAPI backend)
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/smarthealth:$COMMIT_SHA'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/smarthealth:latest'
+      - '.'
+    id: 'build-image'
+
+  # 2. Push container image to Google Container Registry / Artifact Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'push'
+      - 'gcr.io/$PROJECT_ID/smarthealth:latest'
+    id: 'push-image'
+
+  # 3. Deploy to Google Cloud Run (Mumbai Region: asia-south1 for Indian PHC/CHC network)
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'deploy'
+      - 'smarthealth'
+      - '--image'
+      - 'gcr.io/$PROJECT_ID/smarthealth:latest'
+      - '--region'
+      - 'asia-south1'
+      - '--platform'
+      - 'managed'
+      - '--allow-unauthenticated'
+      - '--memory'
+      - '1Gi'
+      - '--cpu'
+      - '1'
+      - '--timeout'
+      - '300'
+      - '--max-instances=1'
+      - '--set-env-vars'
+      - 'ENVIRONMENT=production,DEBUG=false,USE_MOCK_DB=true,RATE_LIMIT_PER_MINUTE=120,GEMINI_MODEL=gemini-2.5-flash'
+    id: 'deploy-cloud-run'
+
+images:
+  - 'gcr.io/$PROJECT_ID/smarthealth:latest'
+  - 'gcr.io/$PROJECT_ID/smarthealth:$COMMIT_SHA'
+
+options:
+  logging: CLOUD_LOGGING_ONLY

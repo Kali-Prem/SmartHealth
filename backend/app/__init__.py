@@ -1,0 +1,1 @@
+"""SmartHealth backend application package."""

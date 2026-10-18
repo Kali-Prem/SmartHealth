@@ -1,0 +1,22 @@
+# Ruff Configuration for SmartHealth
+target-version = "py312"
+line-length = 100
+
+[lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "UP",  # pyupgrade
+]
+ignore = [
+    "B008",  # do not perform function calls in argument defaults (standard in FastAPI Depends)
+    "E501",  # line length handled by formatter
+    "UP042", # allow class X(str, Enum)
+]
+
+[lint.per-file-ignores]
+"tests/*" = ["F401", "F811"]
