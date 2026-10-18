@@ -18,7 +18,7 @@ FROM python:3.12-slim-bookworm AS production
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     PIP_NO_CACHE_DIR=1 \
-    PORT=8000
+    PORT=8080
 
 # Install minimal OS dependencies for security and compilation
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -45,10 +45,10 @@ COPY --from=frontend-builder /app/frontend/dist ./frontend/dist
 RUN chown -R smarthealth:smarthealth /app
 USER smarthealth
 
-EXPOSE 8000
+EXPOSE 8080
 
-# Health check
+# Health check using dynamic port
 HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:8000/healthz || exit 1
+    CMD curl -f http://localhost:${PORT:-8080}/healthz || exit 1
 
-CMD ["uvicorn", "backend.app.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "2"]
+CMD ["sh", "-c", "exec uvicorn backend.app.main:app --host 0.0.0.0 --port ${PORT:-8080} --workers 2"]
